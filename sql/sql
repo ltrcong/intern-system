@@ -1,0 +1,208 @@
+CREATE DATABASE internship_management_system;
+USE internship_management_system;
+
+-- Table: faculty
+CREATE TABLE faculty (
+    faculty_id INT AUTO_INCREMENT PRIMARY KEY,
+    faculty_name VARCHAR(100) NOT NULL
+);
+
+-- Table: major
+CREATE TABLE major (
+    major_id INT AUTO_INCREMENT PRIMARY KEY,
+    major_name VARCHAR(100) NOT NULL,
+    faculty_id INT,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id)
+);
+
+-- Table: department
+CREATE TABLE department (
+    department_id INT AUTO_INCREMENT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    faculty_id INT,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id)
+);
+
+-- Table: student
+CREATE TABLE student (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_code VARCHAR(20) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    birth_date DATE,
+    faculty_id INT,
+    major_id INT,
+    internship_status ENUM('searching','interning','completed','cancelled'),
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id),
+    FOREIGN KEY (major_id) REFERENCES major(major_id)
+);
+
+-- Table: lecturer
+CREATE TABLE lecturer (
+    lecturer_id INT AUTO_INCREMENT PRIMARY KEY,
+    lecturer_code VARCHAR(20) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    department_id INT,
+    role ENUM('advisor','internship_supervisor'),
+    FOREIGN KEY (department_id) REFERENCES department(department_id)
+);
+
+-- Table: company
+CREATE TABLE company (
+    company_id INT AUTO_INCREMENT PRIMARY KEY,
+    company_name VARCHAR(150) NOT NULL,
+    address VARCHAR(200),
+    industry VARCHAR(100),
+    website VARCHAR(100)
+);
+
+-- Table: hr
+CREATE TABLE hr (
+    hr_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    company_id INT,
+    FOREIGN KEY (company_id) REFERENCES company(company_id)
+);
+
+-- Table: mentor
+CREATE TABLE mentor (
+    mentor_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    company_id INT,
+    expertise VARCHAR(100),
+    FOREIGN KEY (company_id) REFERENCES company(company_id)
+);
+
+-- Table: internship_batch
+CREATE TABLE internship_batch (
+    batch_id INT AUTO_INCREMENT PRIMARY KEY,
+    batch_name VARCHAR(100) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    description TEXT
+);
+
+-- Table: internship_assignment
+CREATE TABLE internship_assignment (
+    assignment_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    company_id INT,
+    mentor_id INT,
+    hr_id INT,
+    lecturer_id INT,
+    batch_id INT,
+    status ENUM('searching','interning','completed','cancelled'),
+    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY (company_id) REFERENCES company(company_id),
+    FOREIGN KEY (mentor_id) REFERENCES mentor(mentor_id),
+    FOREIGN KEY (hr_id) REFERENCES hr(hr_id),
+    FOREIGN KEY (lecturer_id) REFERENCES lecturer(lecturer_id),
+    FOREIGN KEY (batch_id) REFERENCES internship_batch(batch_id)
+);
+
+-- Table: internship_report
+CREATE TABLE internship_report (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    assignment_id INT,
+    submission_date DATE,
+    report_file VARCHAR(200),
+    summary TEXT,
+    FOREIGN KEY (assignment_id) REFERENCES internship_assignment(assignment_id)
+);
+
+-- Table: evaluation
+CREATE TABLE evaluation (
+    evaluation_id INT AUTO_INCREMENT PRIMARY KEY,
+    report_id INT,
+    evaluator_id INT,
+    evaluator_role ENUM('lecturer','mentor'),
+    score DECIMAL(4,2),
+    feedback TEXT,
+    FOREIGN KEY (report_id) REFERENCES internship_report(report_id)
+);
+
+-- Table: internship_contract
+CREATE TABLE internship_contract (
+    contract_id INT AUTO_INCREMENT PRIMARY KEY,
+    assignment_id INT,
+    signed_date DATE,
+    end_date DATE,
+    terms TEXT,
+    FOREIGN KEY (assignment_id) REFERENCES internship_assignment(assignment_id)
+);
+
+-- ===========================
+-- FAKE DATA FOR IT FACULTY
+-- ===========================
+-- Faculty
+INSERT INTO faculty (faculty_name) VALUES ('Information Technology');
+
+-- Majors
+INSERT INTO major (major_name, faculty_id) VALUES
+('Software Engineering', 1),
+('Data Science', 1),
+('Cybersecurity', 1),
+('Cloud Computing', 1),
+('Artificial Intelligence', 1);
+
+-- Departments
+INSERT INTO department (department_name, faculty_id) VALUES
+('Computer Science', 1),
+('Artificial Intelligence', 1),
+('Information Security', 1),
+('Cloud Systems', 1),
+('Data Analytics', 1),
+('Software Development', 1);
+
+-- Students
+INSERT INTO student (student_code, full_name, email, phone, birth_date, faculty_id, major_id, internship_status) VALUES
+('SV001', 'Alice Nguyen', 'alice.nguyen@ituniv.edu', '0901234567', '2003-05-12', 1, 1, 'searching'),
+('SV002', 'Bob Tran', 'bob.tran@ituniv.edu', '0912345678', '2002-11-20', 1, 2, 'interning'),
+('SV003', 'Charlie Pham', 'charlie.pham@ituniv.edu', '0923456789', '2003-02-14', 1, 3, 'completed'),
+('SV004', 'David Hoang', 'david.hoang@ituniv.edu', '0934567890', '2003-03-15', 1, 4, 'interning'),
+('SV005', 'Ella Tran', 'ella.tran@ituniv.edu', '0945678901', '2002-09-25', 1, 5, 'completed'),
+('SV006', 'Frank Le', 'frank.le@ituniv.edu', '0956789012', '2003-01-05', 1, 1, 'searching'),
+('SV007', 'Grace Pham', 'grace.pham@ituniv.edu', '0967890123', '2004-04-20', 1, 2, 'interning');
+
+-- Lecturers
+INSERT INTO lecturer (lecturer_code, full_name, email, department_id, role) VALUES
+('GV001', 'Dr. John Pham', 'john.pham@ituniv.edu', 1, 'advisor'),
+('GV002', 'Ms. Linda Le', 'linda.le@ituniv.edu', 2, 'internship_supervisor'),
+('GV003', 'Dr. Henry Vo', 'henry.vo@ituniv.edu', 3, 'advisor'),
+('GV004', 'Prof. Susan Tran', 'susan.tran@ituniv.edu', 4, 'internship_supervisor'),
+('GV005', 'Mr. Tom Ho', 'tom.ho@ituniv.edu', 5, 'advisor');
+
+-- Companies
+INSERT INTO company (company_name, address, industry, website) VALUES
+('TechCorp Vietnam', '123 Nguyen Trai, HCMC', 'Software Development', 'www.techcorp.vn'),
+('AI Solutions Ltd.', '45 Le Loi, Hanoi', 'Artificial Intelligence', 'www.aisolutions.com'),
+('CloudTech Solutions', '200 Vo Van Kiet, HCMC', 'Cloud Computing', 'www.cloudtech.vn'),
+('CyberSec Ltd.', '78 Tran Phu, Hanoi', 'Cybersecurity', 'www.cybersec.com'),
+('DataVision AI', '15 Nguyen Hue, HCMC', 'Data Analytics', 'www.datavision.vn');
+
+-- HR
+INSERT INTO hr (full_name, email, company_id) VALUES
+('David Hoang', 'david.hr@techcorp.vn', 1),
+('Sophia Tran', 'sophia.hr@aisolutions.com', 2),
+('Anna Nguyen', 'anna.hr@cloudtech.vn', 3),
+('Michael Tran', 'michael.hr@cybersec.com', 4),
+('Jenny Ho', 'jenny.hr@datavision.vn', 5);
+
+-- Mentors
+INSERT INTO mentor (full_name, email, company_id, expertise) VALUES
+('Kevin Nguyen', 'kevin.mentor@techcorp.vn', 1, 'Backend Development'),
+('Emma Le', 'emma.mentor@aisolutions.com', 2, 'Machine Learning'),
+('Peter Le', 'peter.mentor@cloudtech.vn', 3, 'Cloud Infrastructure'),
+('Laura Pham', 'laura.mentor@cybersec.com', 4, 'Network Security'),
+('Chris Vo', 'chris.mentor@datavision.vn', 5, 'Data Science');
+
+-- Internship Batches
+INSERT INTO internship_batch (batch_name, start_date, end_date, description) VALUES
+('Summer 2026', '2026-06-01', '2026-08-31', 'Summer internship program for IT students'),
+('Fall 2026', '2026-09-01', '2026-12-15', 'Fall internship program for IT students'),
+('Spring 2027', '2027-03-01', '2027-05-31', 'Spring internship program for IT students'),
+('Winter 2027', '2027-12-01', '2028-02-28', 'Winter internship program for IT students');
